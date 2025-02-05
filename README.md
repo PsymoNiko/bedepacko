@@ -1,4 +1,4 @@
-# Monopsy - Mono Repo for Bede Package Manager
+# bede - Mono Repo for Bede Package Manager
 
 This repository contains the Bede package manager and its custom packages, organized by Linux distributions.
 
