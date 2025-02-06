@@ -18,6 +18,7 @@ detect_distro() {
 }
 
 DISTRO=$(detect_distro)
+echo "Detected distribution: $DISTRO"DISTRO=$(detect_distro)
 
 # Fetch the correct packages.json from the corresponding branch
 PACKAGE_INDEX="$BASE_URL/$DISTRO/packages/packages.json"
@@ -79,15 +80,20 @@ install_package() {
             exit 1
         fi
 
+        # Get the package manager once here
+        PACKAGE_MANAGER=$(detect_package_manager)
+
         # Install dependencies first
         if [[ -n "$dependencies" ]]; then
             echo "Installing dependencies: $dependencies"
             for dep in $dependencies; do
-                sudo apt install -y $dep 2>/dev/null || \
-                sudo dnf install -y $dep 2>/dev/null || \
-                sudo pacman -S --noconfirm $dep 2>/dev/null || \
-                sudo zypper install -y $dep 2>/dev/null || \
-                echo "Warning: Failed to install dependency: $dep"
+                case "$PACKAGE_MANAGER" in
+                    apt) sudo apt install -y $dep ;;
+                    dnf) sudo dnf install -y $dep ;;
+                    pacman) sudo pacman -S --noconfirm $dep ;;
+                    zypper) sudo zypper install -y $dep ;;
+                    *) echo "Warning: Failed to install dependency $dep. Unknown package manager." ;;
+                esac
             done
         fi
 
@@ -147,7 +153,6 @@ install_package() {
             ;;
     esac
 }
-
 # Function to remove a package installed from bede
 remove_package() {
     package=$1
