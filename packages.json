@@ -1,0 +1,10 @@
+{
+  "gitup": {
+    "version": "1.0",
+    "description": "Git Up command installer",
+    "repo": "git@github.com:PsymoNiko/gitup-package.git",
+    "branch": "main",
+    "path": "gitup.sh",
+    "dependencies": ["git"]
+  }
+}
