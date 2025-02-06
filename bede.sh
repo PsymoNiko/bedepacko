@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Set your GitHub SSH repo name
 GITHUB_USER="PsymoNiko"
-REPO_NAME="your-new-repo-name"  # Change this to your actual repo name
+REPO_NAME="bedepacko"
 INSTALL_DIR="/usr/local/bin"
 BASE_URL="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME"
 
