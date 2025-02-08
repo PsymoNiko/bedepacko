@@ -5,7 +5,9 @@ This repository contains the Bede package manager and its custom packages, organ
 ## Installation
 To install Bede:
 ```bash
-curl -sSL "https://raw.githubusercontent.com/PsymoNiko/bedepacko/main/bede.sh" -o /usr/local/bin/bede && chmod +x /usr/local/bin/bede
+sudo curl -sSL "https://raw.githubusercontent.com/PsymoNiko/bedepacko/main/bede.sh" -o /usr/local/bin/bede
+sudo chmod +x /usr/local/bin/bede
+
 ```
 
 ## Usage
