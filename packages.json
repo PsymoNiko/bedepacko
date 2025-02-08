@@ -4,5 +4,11 @@
     "description": "Git Up command installer",
     "url": "https://raw.githubusercontent.com/PsymoNiko/gitup-package/main/gitup.sh",
     "dependencies": ["git"]
+  },
+  "kojas": {
+    "version": "1.0",
+    "description": "Kojas command installer",
+    "url": "https://raw.githubusercontent.com/PsymoNiko/kojas-package/main/kojas.sh",
+    "dependencies": []
   }
 }
