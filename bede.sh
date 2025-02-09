@@ -7,6 +7,16 @@ INSTALL_DIR="/usr/local/bin"
 # We assume your packages.json is in the MAIN branch of bedepacko.
 PACKAGE_INDEX="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/main/packages.json"
 
+check_command() {
+    local cmd="$1"
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "You do not have the '$cmd' package installed."
+        echo "Install it using:"
+        echo "sudo bede install $cmd"
+        exit 1
+    fi
+}
+
 # Retrieve the operating system information using hostnamectl.
 os_line=$(hostnamectl | grep "Operating System")
 # Extract the OS name by splitting on ':' and trimming whitespace.
