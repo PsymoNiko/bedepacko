@@ -20,18 +20,19 @@ check_command() {
 # Retrieve the operating system information using hostnamectl.
 os_line=$(hostnamectl | grep "Operating System")
 # Extract the OS name by splitting on ':' and trimming whitespace.
-os_info=$(echo "$os_line" | cut -d: -f2 | sed 's/^[[:space:]]*//')
+os_info=$(awk -F= '/^ID_LIKE/ { gsub(/"/, "", $2); print $2 }' /etc/os-release)
+
 
 echo "Detected OS: $os_info"
 
 # Determine the default package manager based on common OS identifiers.
-if [[ "$os_info" == *"Ubuntu"* || "$os_info" == *"Debian"* ]]; then
+if [[ "${os_info,,}" == "ubuntu" || "${os_info,,}" == "debian" ]]; then
     package_manager="apt"
-elif [[ "$os_info" == *"Fedora"* || "$os_info" == *"Red Hat"* || "$os_info" == *"CentOS"* ]]; then
+elif [[ "${os_info,,}" == "fedora" || "${os_info,,}" == "red hat" || "${os_info,,}" == "centos" ]]; then
     package_manager="dnf"
-elif [[ "$os_info" == *"Arch"* ]]; then
+elif [[ "${os_info,,}" == "arch" ]]; then
     package_manager="pacman"
-elif [[ "$os_info" == *"openSUSE"* ]]; then
+elif [[ "${os_info,,}" == "opensuse" ]]; then
     package_manager="zypper"
 else
     package_manager="unknown"
