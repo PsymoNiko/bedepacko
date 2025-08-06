@@ -1,3 +1,12 @@
+# bedepacko
+
+![Build](https://github.com/PsymoNiko/bedepacko/actions/workflows/main.yml/badge.svg)
+![GitHub release](https://img.shields.io/github/v/release/PsymoNiko/bedepacko)
+![License](https://img.shields.io/github/license/PsymoNiko/bedepacko)
+![Issues](https://img.shields.io/github/issues/PsymoNiko/bedepacko)
+![Pull Requests](https://img.shields.io/github/issues-pr/PsymoNiko/bedepacko)
+![Contributors](https://img.shields.io/github/contributors/PsymoNiko/bedepacko)
+
 # bede - Mono Repo for Bede Package Manager
 
 <p align="center">
