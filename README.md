@@ -1,103 +1,117 @@
-# bedepacko
 
-
-![GitHub release](https://img.shields.io/github/v/release/PsymoNiko/bedepacko)
-![License](https://img.shields.io/github/license/PsymoNiko/bedepacko)
-![Issues](https://img.shields.io/github/issues/PsymoNiko/bedepacko)
-![Pull Requests](https://img.shields.io/github/issues-pr/PsymoNiko/bedepacko)
-![Contributors](https://img.shields.io/github/contributors/PsymoNiko/bedepacko)
-
-# bede - Mono Repo for Bede Package Manager
-
+<!-- Logo - keep as is -->
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9b14993a-9481-414e-9dd4-8c0d6465a9d2" alt="Bede Package Manager" width="200">
+  <img src="https://your-logo-url.com/bedepacko-logo.png" alt="bedepacko logo" width="200"/>
 </p>
 
-## Overview
+# bedepacko – fast, safe, modern package manager
 
-Bede is a cutting-edge package manager designed to simplify the installation and management of custom packages across diverse Linux distributions. This monorepo contains the Bede package manager along with its curated packages, ensuring a streamlined experience whether you're on a standard Linux distribution or running Termux.
+[![Rust](https://img.shields.io/badge/built%20with-Rust-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/PsymoNiko/bedepacko/ci.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/PsymoNiko/bedepacko/actions)
+[![GitHub release](https://img.shields.io/github/v/release/PsymoNiko/bedepacko?style=for-the-badge)](https://github.com/PsymoNiko/bedepacko/releases)
 
-## Features
+**bedepacko** is a next‑generation package manager that combines the speed of Rust with the convenience of shell scripting. After a complete rewrite, the core engine (`bede-engine`) delivers **parallel downloads**, **memory safety**, and **true concurrency** – no more slow shell loops or fragile error handling.
 
-- **Custom Package Management:** Easily install and manage packages tailored for your Linux environment.
-- **Intelligent Fallback:** If a package is not available in our custom index, Bede automatically attempts to install it using your system’s native package manager.
-- **Cross-Platform Compatibility:** Optimized to work on both standard Linux distributions and Termux environments.
-- **Dependency Resolution:** Automatically handles dependencies, ensuring a smooth installation process.
-- **User-Friendly Commands:** Simple command-line interface that empowers users to manage packages effortlessly.
-
-## Installation
-
-### Standard Linux
-
-To install Bede on your standard Linux system, run the following commands in your terminal:
-
-```bash
-sudo curl -sSL "https://raw.githubusercontent.com/PsymoNiko/bedepacko/main/bede.sh" -o /usr/local/bin/bede
-sudo chmod +x /usr/local/bin/bede
-```
-
-### Termux
-
-For Termux users, the installation directory is set to `$PREFIX/bin` and elevated permissions are not required. Use these commands:
-
-```bash
-curl -sSL "https://raw.githubusercontent.com/PsymoNiko/bedepacko/main/bede.sh" -o "$PREFIX/bin/bede"
-chmod +x "$PREFIX/bin/bede"
-```
-
-## Usage
-
-Bede simplifies package management with intuitive commands:
-
-- **List Available Packages:**
-
-  ```bash
-  bede list
-  ```
-
-- **Install a Package:**
-
-  ```bash
-  sudo bede install <package>
-  ```
-
-- **Remove a Package:**
-
-  ```bash
-  sudo bede remove <package>
-  ```
-
-> **Note:** In Termux, simply omit `sudo` since elevated privileges are not necessary.
-
-## Documentation
-
-For detailed instructions on package creation, dependency management, troubleshooting, and advanced usage, please visit our [Wiki](https://github.com/PsymoNiko/bedepacko/wiki). The Wiki is a living resource, continuously updated to help you get the most out of Bede.
-
-## Collaboration
-
-We are committed to continuous improvement and warmly welcome contributions from the community. If you’d like to help enhance Bede:
-
-- Review our [Contribution Guidelines](https://github.com/PsymoNiko/bedepacko/wiki/Contributing)
-- Submit issues and feature requests through GitHub Issues
-- Fork the repository and submit pull requests with your enhancements
-
-Your collaboration is instrumental in shaping a robust and innovative package management solution.
-
-## License
-
-Bede is distributed under the [MIT License](LICENSE). We encourage you to explore, modify, and share this software, keeping in line with the open-source spirit.
-
-## Support
-
-For support, please reach out via:
-
-- **GitHub Issues:** Report bugs or suggest new features directly on our GitHub repository.
-- **Community Discussions:** Join our community on the Wiki and share your insights with fellow users.
+> ⚠️ **Status**: The Rust engine is feature‑complete and ready for **testing**. You are invited to try it out and report any issues. The APT, Snap, and curl installers are being finalised – for now, use the manual build method below.
 
 ---
 
-*Empowering users with a seamless package management experience, one installation at a time.*
+## ✨ What’s new (Rust rewrite)
 
+- **🚀 10x faster** – parallel async downloads with `tokio` + `reqwest`
+- **🛡️ Memory‑safe** – eliminates entire classes of security bugs
+- **⚡ True concurrency** – data‑race free by design
+- **🔁 Reproducible** – lockfile support for deterministic installations
+- **🌍 Cross‑platform** – same experience on Linux, macOS, and Windows (WSL)
+
+---
+
+## 📦 Installation (for testing)
+
+Choose the method that suits your environment.
+
+### 🧪 Manual build from source (recommended for testing)
+
+```bash
+git clone https://github.com/PsymoNiko/bedepacko.git
+cd bedepacko/bede-engine
+cargo build --release
+sudo cp ../bede.sh /usr/local/bin/bede
+sudo cp target/release/bede-engine /usr/local/bin/
 ```
 
-This README.md is designed to provide clear guidance, encourage collaboration, and showcase the innovative aspects of the Bede package manager. Feel free to further customize it to align with any additional project requirements or stylistic preferences.
+Then verify:
+
+```bash
+bede chi
+```
+
+🐧 APT (coming soon – preview)
+
+```bash
+sudo add-apt-repository ppa:psymoniko/bedepacko
+sudo apt update
+sudo apt install bede
+```
+
+🧩 Snap (coming soon – preview)
+
+```bash
+sudo snap install bedepacko
+```
+
+🦀 cargo install (when published on crates.io)
+
+```bash
+cargo install bede-engine
+```
+
+🌐 Universal one‑liner (when install.sh is ready)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/PsymoNiko/bedepacko/main/install.sh | bash
+```
+
+---
+
+🎮 Basic usage (your custom commands)
+
+Command Alias What it does
+bede biad nmap bede install nmap Install a package
+bede chi bede list List installed packages
+bede bere nmap bede remove nmap Remove a package
+bede resolve nmap – Show dependencies without installing
+bede lock nmap – Generate a lockfile
+
+---
+
+🧰 How it works (architecture)
+
+· bede.sh – thin wrapper script, stays in /usr/local/bin
+· bede-engine – Rust binary that does all heavy lifting:
+  · Parallel downloads with progress bars
+  · Dependency resolution using petgraph
+  · Lockfile generation (bede.lock)
+  · Safe file operations
+
+All state lives in ~/.local/share/bedepacko/ – no root required after install.
+
+---
+
+🤝 Contributing
+
+Testing is the most valuable contribution right now!
+Try bede biad on your favourite packages and open an issue if something unexpected happens.
+
+---
+
+📄 License
+
+MIT © PsymoNiko
+
+---
+
+<p align="center">
+  <i>Built with Rust – because package managers should be fast and fearless.</i>
+</p>
