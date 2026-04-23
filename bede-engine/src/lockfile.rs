@@ -12,7 +12,6 @@ pub struct LockEntry {
 
 pub type Lockfile = HashMap<String, LockEntry>;
 
-/*
 pub fn read_lockfile(path: &Path) -> anyhow::Result<Option<Lockfile>> {
     if !path.exists() {
         return Ok(None);
@@ -20,7 +19,6 @@ pub fn read_lockfile(path: &Path) -> anyhow::Result<Option<Lockfile>> {
     let content = fs::read_to_string(path)?;
     Ok(Some(toml::from_str(&content)?))
 }
-*/
 
 pub fn write_lockfile(lock: &Lockfile, path: &Path) -> anyhow::Result<()> {
     let toml = toml::to_string_pretty(lock)?;
