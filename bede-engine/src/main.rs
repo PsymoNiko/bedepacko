@@ -39,6 +39,13 @@ enum Command {
         #[arg(short, long, default_value = "bede.lock")]
         output: PathBuf,
     },
+    /// Remove installed packages
+    Remove {
+        #[arg(required = true)]
+        packages: Vec<String>,
+    },
+    /// List installed packages
+    List,
 }
 
 #[tokio::main]
@@ -46,7 +53,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
         Command::Fetch { packages, version, repo, dest } => {
-            let repo_path = repo.unwrap_or_else(|| PathBuf::from("./repo.json"));
+            let repo_path = repo.unwrap_or_else(|| PathBuf::from("repo.json"));
             let db = manifest::PackageDb::from_json(repo_path.to_str().unwrap())?;
             let mut all_pkgs = Vec::new();
             for p in packages {
@@ -78,6 +85,33 @@ async fn main() -> Result<()> {
             }
             lockfile::write_lockfile(&lock, &output)?;
             println!("Lockfile written to {}", output.display());
+        }
+        Command::Remove { packages } => {
+            let install_dir = dirs::home_dir()
+                .unwrap()
+                .join(".local/share/bedepacko/installed");
+            for pkg in packages {
+                let pkg_path = install_dir.join(&pkg);
+                if pkg_path.exists() {
+                    std::fs::remove_dir_all(&pkg_path)?;
+                    println!("Removed: {}", pkg);
+                } else {
+                    eprintln!("Package not installed: {}", pkg);
+                }
+            }
+        }
+        Command::List => {
+            let install_dir = dirs::home_dir()
+                .unwrap()
+                .join(".local/share/bedepacko/installed");
+            if install_dir.exists() {
+                for entry in std::fs::read_dir(install_dir)? {
+                    let entry = entry?;
+                    println!("{}", entry.file_name().to_string_lossy());
+                }
+            } else {
+                println!("No packages installed.");
+            }
         }
     }
     Ok(())

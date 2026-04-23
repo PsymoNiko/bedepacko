@@ -37,7 +37,6 @@ pub fn resolve(pkg_name: &str, db: &PackageDb, preferred_version: &str) -> Resul
     let mut result = Vec::new();
     for node_idx in sorted {
         let name = &graph[node_idx];
-        // Find the package in the DB (using latest version that matches)
         let pkg = db.resolve_best_match(name, "latest")?;
         result.push(pkg);
     }
