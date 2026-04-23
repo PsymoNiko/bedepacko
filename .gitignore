@@ -4,7 +4,7 @@ raw-git-url.md
 # ========================
 
 # The primary build output directory for Cargo projects.
-/target/
+bede-engine/target/
 
 # Remove Cargo.lock from gitignore ONLY if you are building a library.
 # For applications (binaries), you SHOULD commit this file for reproducibility.
