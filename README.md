@@ -1,7 +1,7 @@
 
 <!-- Logo - keep as is -->
 <p align="center">
-  <img src="https://your-logo-url.com/bedepacko-logo.png" alt="bedepacko logo" width="200"/>
+  <img src="https://github.com/user-attachments/assets/9b14993a-9481-414e-9dd4-8c0d6465a9d2" alt="bedepacko logo" width="200"/>
 </p>
 
 # bedepacko – fast, safe, modern package manager
