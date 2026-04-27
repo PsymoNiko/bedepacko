@@ -1,13 +1,13 @@
 #!/bin/bash
-set -e  # exit on error
+set -e
 
-# Colors for pretty output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Logo (keep as requested)
+# Logo
 echo -e "${GREEN}"
 cat << "EOF"
   ██████╗ ███████╗██████╗ ███████╗██████╗  █████╗  ██████╗██╗  ██╗ ██████╗ 
@@ -21,46 +21,67 @@ echo -e "${NC}"
 echo "bedepacko installer – fast, safe, Rust-powered package manager"
 echo "================================================================"
 
-# Function to detect OS and package manager
-detect_os() {
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        OS="linux"
-        if command -v apt &> /dev/null; then
-            PKG_MANAGER="apt"
-        elif command -v dnf &> /dev/null; then
-            PKG_MANAGER="dnf"
-        elif command -v yum &> /dev/null; then
-            PKG_MANAGER="yum"
-        else
-            PKG_MANAGER="unknown"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        OS="macos"
-        if command -v brew &> /dev/null; then
-            PKG_MANAGER="brew"
-        else
-            PKG_MANAGER="unknown"
-        fi
+# Check internet connectivity
+check_internet() {
+    if ping -c 1 google.com &> /dev/null || curl -s --head https://rustup.rs &> /dev/null; then
+        return 0
     else
-        OS="unknown"
-        PKG_MANAGER="unknown"
+        return 1
     fi
-    echo -e "${GREEN}✓${NC} Detected OS: $OS, Package manager: $PKG_MANAGER"
 }
 
-# Install Rust if missing
+# Install Rust using system package manager (fallback)
+install_rust_system() {
+    echo -e "${YELLOW}→${NC} No internet or rustup failed. Trying system package manager..."
+    if command -v apt &> /dev/null; then
+        sudo apt update
+        sudo apt install -y cargo
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y cargo
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y cargo
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm rust
+    else
+        echo -e "${RED}✗${NC} Could not install Rust automatically. Please install Rust manually: https://rustup.rs/"
+        exit 1
+    fi
+}
+
+# Main Rust installation logic
 install_rust() {
-    if ! command -v cargo &> /dev/null; then
-        echo -e "${YELLOW}→${NC} Rust not found. Installing via rustup..."
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        source "$HOME/.cargo/env"
-        echo -e "${GREEN}✓${NC} Rust installed successfully"
-    else
+    if command -v cargo &> /dev/null; then
         echo -e "${GREEN}✓${NC} Rust already present: $(cargo --version)"
+        return
+    fi
+
+    echo -e "${YELLOW}→${NC} Rust not found. Attempting to install..."
+
+    if check_internet; then
+        echo "Internet detected. Installing via rustup..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        # Source cargo environment – handle root vs normal user
+        if [ "$EUID" -eq 0 ]; then
+            # Running as root
+            source /root/.cargo/env
+        else
+            source "$HOME/.cargo/env"
+        fi
+    else
+        echo -e "${YELLOW}⚠${NC} No internet connection. Falling back to system packages."
+        install_rust_system
+    fi
+
+    # Verify again
+    if ! command -v cargo &> /dev/null; then
+        echo -e "${RED}✗${NC} Rust installation failed. Please install manually: https://rustup.rs/"
+        exit 1
+    else
+        echo -e "${GREEN}✓${NC} Rust installed: $(cargo --version)"
     fi
 }
 
-# Build bede-engine
+# Build the engine
 build_engine() {
     echo -e "${YELLOW}→${NC} Building bede-engine (release mode)..."
     cd "$(dirname "$0")/bede-engine"
@@ -69,28 +90,35 @@ build_engine() {
     echo -e "${GREEN}✓${NC} Build complete"
 }
 
-# Install binaries system-wide
+# Install binaries
 install_binaries() {
     echo -e "${YELLOW}→${NC} Installing binaries to /usr/local/bin..."
-    sudo cp "$(dirname "$0")/bede.sh" /usr/local/bin/bede
-    sudo cp "$(dirname "$0")/bede-engine/target/release/bede-engine" /usr/local/bin/
-    sudo chmod +x /usr/local/bin/bede /usr/local/bin/bede-engine
+    # If not root, use sudo
+    if [ "$EUID" -ne 0 ]; then
+        sudo cp "$(dirname "$0")/bede.sh" /usr/local/bin/bede
+        sudo cp "$(dirname "$0")/bede-engine/target/release/bede-engine" /usr/local/bin/
+        sudo chmod +x /usr/local/bin/bede /usr/local/bin/bede-engine
+    else
+        cp "$(dirname "$0")/bede.sh" /usr/local/bin/bede
+        cp "$(dirname "$0")/bede-engine/target/release/bede-engine" /usr/local/bin/
+        chmod +x /usr/local/bin/bede /usr/local/bin/bede-engine
+    fi
     echo -e "${GREEN}✓${NC} Binaries installed"
 }
 
-# Create data directories
+# Create directories
 create_dirs() {
-    echo -e "${YELLOW}→${NC} Creating data directories in ~/.local/share/bedepacko..."
+    echo -e "${YELLOW}→${NC} Creating data directories..."
     mkdir -p "$HOME/.local/share/bedepacko"/{engine,installed,downloads}
     echo -e "${GREEN}✓${NC} Directories ready"
 }
 
-# Create sample repo.json if none exists
+# Create sample repo.json
 create_sample_repo() {
-    REPO_FILE="$HOME/.local/share/bedepacko/repo.json"
-    if [ ! -f "$REPO_FILE" ]; then
-        echo -e "${YELLOW}→${NC} Creating sample package database (repo.json)..."
-        cat > "$REPO_FILE" << 'EOF'
+    local repo_file="$HOME/.local/share/bedepacko/repo.json"
+    if [ ! -f "$repo_file" ]; then
+        echo -e "${YELLOW}→${NC} Creating sample package database..."
+        cat > "$repo_file" << 'EOF'
 [
   {
     "name": "nmap",
@@ -101,27 +129,26 @@ create_sample_repo() {
   }
 ]
 EOF
-        echo -e "${YELLOW}⚠${NC} Sample repo.json created. Replace with real package metadata!"
+        echo -e "${YELLOW}⚠${NC} Sample repo.json created. Replace with real package data!"
     else
         echo -e "${GREEN}✓${NC} Existing repo.json found"
     fi
 }
 
-# Verify installation
+# Verify
 verify() {
     echo -e "${YELLOW}→${NC} Verifying installation..."
     if command -v bede &> /dev/null; then
         echo -e "${GREEN}✓${NC} 'bede' command is available"
         bede chi
     else
-        echo -e "${RED}✗${NC} Installation failed – 'bede' not found in PATH"
+        echo -e "${RED}✗${NC} Installation failed – 'bede' not in PATH"
         exit 1
     fi
 }
 
-# Main execution
+# Main
 main() {
-    detect_os
     install_rust
     build_engine
     install_binaries
@@ -132,13 +159,7 @@ main() {
     echo -e "${GREEN}========================================${NC}"
     echo -e "${GREEN}bedepacko installed successfully!${NC}"
     echo -e "${GREEN}========================================${NC}"
-    echo "Try these commands:"
-    echo "  bede chi                # list installed packages"
-    echo "  bede biad <package>     # install a package"
-    echo "  bede bere <package>     # remove a package"
-    echo ""
-    echo "For help: bede --help"
+    echo "Try: bede chi / bede biad <pkg> / bede bere <pkg>"
 }
 
-# Run the script
 main
