@@ -21,18 +21,9 @@ echo -e "${NC}"
 echo "bedepacko installer – fast, safe, Rust-powered package manager"
 echo "================================================================"
 
-# Check internet connectivity
-check_internet() {
-    if ping -c 1 google.com &> /dev/null || curl -s --head https://rustup.rs &> /dev/null; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# Install Rust using system package manager (fallback)
+# Function to try system package manager first
 install_rust_system() {
-    echo -e "${YELLOW}→${NC} No internet or rustup failed. Trying system package manager..."
+    echo -e "${YELLOW}→${NC} Attempting to install Rust via system package manager..."
     if command -v apt &> /dev/null; then
         sudo apt update
         sudo apt install -y cargo
@@ -43,48 +34,57 @@ install_rust_system() {
     elif command -v pacman &> /dev/null; then
         sudo pacman -S --noconfirm rust
     else
-        echo -e "${RED}✗${NC} Could not install Rust automatically. Please install Rust manually: https://rustup.rs/"
-        exit 1
+        echo -e "${RED}✗${NC} No supported package manager found for Rust installation."
+        return 1
     fi
 }
 
-# Main Rust installation logic
+# Function to try rustup (if system method fails or user wants latest)
+install_rust_rustup() {
+    echo -e "${YELLOW}→${NC} Trying rustup (official installer)..."
+    # Use a mirror or retry logic
+    if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; then
+        echo -e "${RED}✗${NC} rustup installation failed."
+        return 1
+    fi
+    # Add cargo to PATH for this script
+    export PATH="$HOME/.cargo/bin:$PATH"
+    echo -e "${GREEN}✓${NC} Rust installed via rustup"
+}
+
+# Main Rust installation
 install_rust() {
     if command -v cargo &> /dev/null; then
         echo -e "${GREEN}✓${NC} Rust already present: $(cargo --version)"
         return
     fi
 
-    echo -e "${YELLOW}→${NC} Rust not found. Attempting to install..."
+    echo -e "${YELLOW}→${NC} Rust not found."
 
-    if check_internet; then
-        echo "Internet detected. Installing via rustup..."
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        # Source cargo environment – handle root vs normal user
-        if [ "$EUID" -eq 0 ]; then
-            # Running as root
-            source /root/.cargo/env
-        else
-            source "$HOME/.cargo/env"
+    # Always try system package manager first (more reliable on servers)
+    if install_rust_system; then
+        if command -v cargo &> /dev/null; then
+            echo -e "${GREEN}✓${NC} Rust installed via system packages: $(cargo --version)"
+            return
         fi
-    else
-        echo -e "${YELLOW}⚠${NC} No internet connection. Falling back to system packages."
-        install_rust_system
     fi
 
-    # Verify again
-    if ! command -v cargo &> /dev/null; then
-        echo -e "${RED}✗${NC} Rust installation failed. Please install manually: https://rustup.rs/"
-        exit 1
-    else
-        echo -e "${GREEN}✓${NC} Rust installed: $(cargo --version)"
+    # If system method failed, try rustup
+    if install_rust_rustup; then
+        return
     fi
+
+    # Both failed
+    echo -e "${RED}✗${NC} Could not install Rust. Please install manually: https://rustup.rs/"
+    exit 1
 }
 
 # Build the engine
 build_engine() {
     echo -e "${YELLOW}→${NC} Building bede-engine (release mode)..."
     cd "$(dirname "$0")/bede-engine"
+    # Ensure cargo is in PATH (for rustup case)
+    export PATH="$HOME/.cargo/bin:$PATH"
     cargo build --release
     cd - > /dev/null
     echo -e "${GREEN}✓${NC} Build complete"
@@ -93,7 +93,6 @@ build_engine() {
 # Install binaries
 install_binaries() {
     echo -e "${YELLOW}→${NC} Installing binaries to /usr/local/bin..."
-    # If not root, use sudo
     if [ "$EUID" -ne 0 ]; then
         sudo cp "$(dirname "$0")/bede.sh" /usr/local/bin/bede
         sudo cp "$(dirname "$0")/bede-engine/target/release/bede-engine" /usr/local/bin/
@@ -106,7 +105,7 @@ install_binaries() {
     echo -e "${GREEN}✓${NC} Binaries installed"
 }
 
-# Create directories
+# Create data directories
 create_dirs() {
     echo -e "${YELLOW}→${NC} Creating data directories..."
     mkdir -p "$HOME/.local/share/bedepacko"/{engine,installed,downloads}
