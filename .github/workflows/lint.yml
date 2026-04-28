@@ -2,46 +2,55 @@ name: Lint
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # -------------------------------
+  # Rust formatting & clippy
+  # -------------------------------
   rust-lint:
-    name: Rust (clippy + fmt)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          components: clippy, rustfmt
-          override: true
+          components: rustfmt, clippy
 
-      - name: Run cargo fmt
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting (rustfmt)
         run: cargo fmt --all -- --check
-        working-directory: ./bede-engine
+        working-directory: ./bede-engine  # adjust if your Cargo.toml is elsewhere
 
-      - name: Run cargo clippy
+      - name: Run clippy (warnings as errors)
         run: cargo clippy -- -D warnings
         working-directory: ./bede-engine
 
+  # -------------------------------
+  # Shell script linting
+  # -------------------------------
   shell-lint:
-    name: Shell (shellcheck)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run shellcheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './'
-          ignore: 'target'
-        env:
-          SHELLCHECK_OPTS: -e SC1091  # ignore "not following" errors for sourced files
+      - name: Run shellcheck on all .sh files
+        run: |
+          find . -name "*.sh" -type f -exec shellcheck {} \;
+        shell: bash
