@@ -1,0 +1,47 @@
+name: Lint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust-lint:
+    name: Rust (clippy + fmt)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: clippy, rustfmt
+          override: true
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+        working-directory: ./bede-engine
+
+      - name: Run cargo clippy
+        run: cargo clippy -- -D warnings
+        working-directory: ./bede-engine
+
+  shell-lint:
+    name: Shell (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './'
+          ignore: 'target'
+        env:
+          SHELLCHECK_OPTS: -e SC1091  # ignore "not following" errors for sourced files
