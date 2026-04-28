@@ -1,0 +1,66 @@
+# Labeler configuration for bedepacko
+# Docs: https://github.com/actions/labeler
+
+# -------------------------------
+# Rust Source Code Labels
+# -------------------------------
+
+# Label for the Rust engine core
+rust:
+  - changed-files:
+      - any-glob-to-any-file: "bede-engine/**/*.rs"
+      - any-glob-to-any-file: "bede-engine/Cargo.toml"
+      - any-glob-to-any-file: "bede-engine/Cargo.lock"
+
+# Label for Rust-specific files (e.g., dependencies, build config)
+rust-deps:
+  - changed-files:
+      - any-glob-to-any-file: "**/Cargo.toml"
+      - any-glob-to-any-file: "**/Cargo.lock"
+
+# -------------------------------
+# Scripting & Configuration
+# -------------------------------
+
+# Label for shell scripts (installer, command wrapper)
+shell:
+  - changed-files:
+      - any-glob-to-any-file: "*.sh"
+      - any-glob-to-any-file: "install.sh"
+      - any-glob-to-any-file: "bede.sh"
+
+# Label for JSON config/data files
+json:
+  - changed-files:
+      - any-glob-to-any-file: "*.json"
+      - any-glob-to-any-file: "packages.json"
+
+# -------------------------------
+# Documentation
+# -------------------------------
+
+# Label for documentation files
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "*.md"
+      - any-glob-to-any-file: "docs/**/*"
+      - any-glob-to-any-file: "CONTRIBUTING.md"
+      - any-glob-to-any-file: "README.md"
+
+# -------------------------------
+# CI/CD & Automation
+# -------------------------------
+
+# Label for GitHub Actions workflows
+github_actions:
+  - changed-files:
+      - any-glob-to-any-file: ".github/workflows/*.yml"
+      - any-glob-to-any-file: ".github/workflows/*.yaml"
+      - any-glob-to-any-file: ".github/labeler.yml"
+      - any-glob-to-any-file: ".github/dependabot.yml"
+
+# Label for dependency management (e.g., dependabot, Cargo)
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: "Cargo.lock"
+      - any-glob-to-any-file: "**/Cargo.lock"
