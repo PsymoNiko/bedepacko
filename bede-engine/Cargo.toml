@@ -18,3 +18,14 @@ indicatif = "0.17"
 futures = "0.3"
 hex = "0.4"
 dirs = "5"
+
+
+[package.metadata.deb]
+maintainer = "PsymoNiko callmeali@duck.com"
+section = "utils"
+priority = "optional"
+depends = "$auto"
+assets = [
+    ["target/release/bede-engine", "usr/bin/", "755"],
+    ["../bede.sh", "usr/bin/bede", "755"],
+]
