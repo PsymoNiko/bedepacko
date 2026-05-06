@@ -10,6 +10,9 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/github/actions/workflow/status/PsymoNiko/bedepacko/ci.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/PsymoNiko/bedepacko/actions)
 [![GitHub release](https://img.shields.io/github/v/release/PsymoNiko/bedepacko?style=for-the-badge)](https://github.com/PsymoNiko/bedepacko/releases)
+![Lines of Code](https://img.shields.io/tokei/lines/github/PsymoNiko/bedepacko?style=for-the-badge&label=bedepacko%20LoC)
+![bedepacko](https://img.shields.io/badge/bedepacko-0A5C8E?style=for-the-badge&logo=package&logoColor=white)
+![Package Manager](https://img.shields.io/badge/Package%20Manager-bedepacko-2C5F2D?style=for-the-badge&logo=homebrew&logoColor=white)
 
 **bedepacko** is a next‑generation package manager that combines the speed of Rust with the convenience of shell scripting. After a complete rewrite, the core engine (`bede-engine`) delivers **parallel downloads**, **memory safety**, and **true concurrency** – no more slow shell loops or fragile error handling.
 
